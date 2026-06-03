@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoundTao — Programme Acouphènes Personnalisé</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#1a5fa8;--blue-l:#2a7fd4;--blue-pale:#e8f2fc;--blue-border:#c2dcf5;
+  --teal:#0e8a7a;--teal-pale:#e4f5f3;
+  --text:#1a1f2e;--text-mid:#3d4a5c;--text-light:#6b7a90;
+  --border:#dde3ec;--white:#fff;--bg:#f7f4ef;
+  --shadow:0 2px 12px rgba(26,95,168,0.08);
+  --shadow-lg:0 8px 32px rgba(26,95,168,0.12);
+  --r:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Nunito Sans',sans-serif;font-size:17px;line-height:1.6;min-height:100vh;}
+
+.page{width:100%;}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#1a5fa8 0%,#0e8a7a 100%);padding:48px 20px 56px;text-align:center;width:100%;}
+.hdr-logo{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:50px;padding:10px 22px;margin-bottom:24px;}
+.hdr-logo-icon{width:32px;height:32px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.hdr-logo-text{font-family:'Nunito',sans-serif;font-weight:800;font-size:18px;color:white;}
+.hdr-title{font-family:'Nunito',sans-serif;font-size:clamp(26px,5vw,50px);font-weight:800;color:white;line-height:1.15;margin-bottom:12px;}
+.hdr-sub{font-size:clamp(14px,2vw,17px);color:rgba(255,255,255,0.85);max-width:560px;margin:0 auto;line-height:1.6;}
+
+/* STICKY PROGRESS */
+.prog-bar{position:sticky;top:0;z-index:100;background:white;border-bottom:2px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.06);width:100%;}
+.prog-inner{max-width:900px;margin:0 auto;display:flex;}
+.pb{flex:1;padding:12px 6px;text-align:center;font-family:'Nunito',sans-serif;font-weight:700;font-size:11px;color:var(--text-light);border-right:1px solid var(--border);transition:all 0.3s;}
+.pb:last-child{border-right:none;}
+.pb-num{display:block;font-size:17px;font-weight:800;margin-bottom:1px;}
+.pb.active{color:var(--blue);background:var(--blue-pale);}
+.pb.done{color:var(--teal);}
+
+/* SECTION */
+.section{width:100%;background:var(--bg);}
+.si{max-width:900px;margin:0 auto;padding:28px 16px;}
+
+/* FLOW */
+.fs{width:100%;}
+.fs.hidden{display:none;}
+.arrow{text-align:center;padding:6px 0;font-size:22px;color:var(--blue-border);display:none;}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:clamp(18px,4vw,32px);margin-bottom:14px;box-shadow:var(--shadow);width:100%;}
+.cs{display:inline-block;background:var(--blue-pale);color:var(--blue);font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 12px;border-radius:50px;margin-bottom:10px;}
+.ct{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(18px,3vw,24px);color:var(--text);margin-bottom:8px;}
+.cb{font-size:15px;color:var(--text-mid);line-height:1.65;}
+
+/* SOUND TYPE — descriptions humaines */
+.sound-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+@media(min-width:600px){.sound-grid{grid-template-columns:repeat(3,1fr);}}
+.sound-btn{background:var(--bg);border:2px solid var(--border);border-radius:var(--r);padding:16px 12px;cursor:pointer;text-align:left;transition:all 0.2s;position:relative;}
+.sound-btn:hover,.sound-btn.sel{border-color:var(--blue);background:var(--blue-pale);}
+.sound-btn-top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.sound-emoji{font-size:22px;}
+.sound-name{font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:var(--text);}
+.sound-desc{font-size:12px;color:var(--text-mid);line-height:1.4;margin-bottom:8px;}
+.sound-play{display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--blue-border);border-radius:20px;padding:4px 10px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:11px;color:var(--blue);transition:all 0.2s;}
+.sound-play:hover{background:var(--blue-pale);}
+.sound-play.playing{background:var(--blue);color:white;border-color:var(--blue);}
+
+/* PROFILE */
+.prof-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+@media(min-width:600px){.prof-grid{grid-template-columns:repeat(4,1fr);}}
+.prof-btn{background:var(--bg);border:2px solid var(--border);border-radius:var(--r);padding:16px 12px;cursor:pointer;text-align:left;transition:all 0.2s;}
+.prof-btn:hover,.prof-btn.sel{border-color:var(--blue);background:var(--blue-pale);}
+.prof-icon{font-size:20px;margin-bottom:6px;display:block;}
+.prof-name{font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;color:var(--text);margin-bottom:2px;}
+.prof-desc{font-size:12px;color:var(--text-mid);line-height:1.4;}
+.prof-hz{font-size:11px;color:var(--blue);font-weight:700;margin-top:4px;}
+
+/* COMPARISON */
+.rt-wrap{display:flex;gap:4px;margin-bottom:12px;}
+.rt{flex:1;height:5px;background:var(--border);border-radius:3px;transition:background 0.3s;}
+.rt.done{background:var(--blue);}
+.rt.now{background:linear-gradient(90deg,var(--blue),var(--teal));}
+.rl{font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;color:var(--text-light);text-align:center;margin-bottom:12px;}
+.rl span{color:var(--blue);font-weight:800;}
+.cq{font-family:'Nunito',sans-serif;font-weight:700;font-size:clamp(16px,2.5vw,19px);text-align:center;color:var(--text);margin-bottom:16px;line-height:1.4;}
+
+.cl-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.cl{background:var(--bg);border:2px solid var(--border);border-radius:var(--r);padding:0;cursor:pointer;transition:all 0.2s;overflow:hidden;}
+.cl-top{padding:18px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.cl-letter{font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;}
+.cl.A .cl-letter{color:var(--teal);}
+.cl.B .cl-letter{color:var(--blue);}
+.cl-freq{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(22px,4vw,32px);color:var(--text);line-height:1;}
+.cl-hz{font-size:12px;color:var(--text-light);font-weight:600;}
+.cl-state{font-size:12px;color:var(--text-light);}
+.cl-bar{height:4px;width:100%;background:var(--border);}
+.cl-bar-in{height:100%;width:0%;transition:width 0.08s linear;}
+.cl.A .cl-bar-in{background:var(--teal);}
+.cl.B .cl-bar-in{background:var(--blue);}
+.cl.A:hover,.cl.A.on{border-color:var(--teal);background:var(--teal-pale);}
+.cl.B:hover,.cl.B.on{border-color:var(--blue);background:var(--blue-pale);}
+
+.cfm-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.cfm{padding:13px;border-radius:var(--r);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;transition:all 0.2s;border:2px solid;background:transparent;}
+.cfm.A{color:var(--teal);border-color:var(--teal);}
+.cfm.A:hover:not(:disabled){background:var(--teal-pale);}
+.cfm.B{color:var(--blue);border-color:var(--blue);}
+.cfm.B:hover:not(:disabled){background:var(--blue-pale);}
+.cfm:disabled{opacity:0.25;cursor:not-allowed;}
+.exact-btn{display:block;width:100%;margin:0 0 8px;background:#fff8e6;border:2px solid #f0a500;border-radius:var(--r);padding:13px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;color:#b07800;transition:all 0.2s;}
+.exact-btn:hover:not(:disabled){background:#fff0c0;}
+.exact-btn:disabled{opacity:0.2;cursor:not-allowed;}
+.skip-btn{display:block;width:100%;background:transparent;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:600;font-size:13px;color:var(--text-light);padding:8px;text-decoration:underline;text-underline-offset:3px;}
+.hint{font-size:13px;color:var(--text-light);text-align:center;margin-top:6px;font-weight:600;min-height:16px;}
+
+/* RESULT */
+.res-c{text-align:center;padding:16px 0;}
+.res-num{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(56px,12vw,88px);color:var(--blue);line-height:1;letter-spacing:-2px;}
+.res-hz{font-size:14px;color:var(--text-light);font-weight:700;letter-spacing:0.1em;margin-top:3px;}
+.res-prof{font-size:15px;color:var(--text-mid);margin-top:6px;font-weight:600;}
+.nb{background:var(--teal-pale);border:1px solid #b0dfd9;border-radius:var(--r);padding:12px 16px;margin:12px 0;}
+.nb-lbl{font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;letter-spacing:0.08em;color:var(--teal);text-transform:uppercase;margin-bottom:6px;}
+.nb p{font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:600;}
+.nb strong{color:var(--text);}
+.spec{width:100%;height:110px;border-radius:var(--r);background:var(--bg);border:1px solid var(--border);margin:12px 0;overflow:hidden;}
+#specCanvas{width:100%;height:100%;display:block;}
+
+/* OCTAVE CHECK */
+.oct-box{background:#fff8e6;border:2px solid #f0a500;border-radius:var(--r);padding:14px 16px;margin:10px 0;}
+.oct-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;color:#b07800;text-transform:uppercase;margin-bottom:8px;}
+.oct-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+.oct-btn{background:var(--bg);border:2px solid var(--border);border-radius:var(--r);padding:12px 6px;cursor:pointer;text-align:center;transition:all 0.2s;}
+.oct-btn:hover,.oct-btn.sel{border-color:var(--blue);background:var(--blue-pale);}
+.oct-freq{font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;color:var(--blue);display:block;line-height:1;margin-bottom:3px;}
+.oct-label{font-size:11px;color:var(--text-light);font-weight:700;}
+.oct-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+
+/* MANUAL */
+.man-panel{margin-top:16px;padding-top:16px;border-top:2px dashed var(--border);}
+.man-lbl{font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;letter-spacing:0.08em;color:var(--teal);text-transform:uppercase;margin-bottom:6px;}
+.man-desc{font-size:14px;color:var(--text-mid);line-height:1.6;margin-bottom:14px;font-weight:600;}
+.man-fc{text-align:center;margin:12px 0 16px;}
+.man-hz{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(44px,8vw,64px);color:var(--blue);line-height:1;display:block;letter-spacing:-2px;}
+.man-unit{font-size:12px;color:var(--text-light);font-weight:700;letter-spacing:0.1em;margin-top:2px;display:block;}
+.man-range{font-size:12px;color:var(--text-light);margin-top:3px;display:block;font-weight:600;}
+.man-ctrl{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:0 0 12px;}
+.mc{background:var(--bg);border:2px solid var(--border);border-radius:var(--r);padding:14px 6px;cursor:pointer;text-align:center;transition:all 0.2s;-webkit-user-select:none;user-select:none;}
+.mc:hover,.mc:active{background:var(--blue-pale);border-color:var(--blue);}
+.mc.minus:hover,.mc.minus:active{background:var(--teal-pale);border-color:var(--teal);}
+.mc-lbl{font-family:'Nunito',sans-serif;font-weight:800;font-size:19px;color:var(--blue);display:block;margin-bottom:2px;}
+.mc.minus .mc-lbl{color:var(--teal);}
+.mc-sub{font-size:10px;color:var(--text-light);font-weight:700;}
+.man-wave{width:100%;height:42px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin:0 0 10px;overflow:hidden;}
+#manCanvas{width:100%;height:100%;display:block;}
+
+/* PAYWALL */
+.pw{background:linear-gradient(135deg,#f0f7ff 0%,#e8f5f3 100%);border:2px solid var(--blue-border);border-radius:var(--r);padding:clamp(22px,4vw,38px);text-align:center;margin-bottom:14px;box-shadow:var(--shadow-lg);}
+.pw-icon{font-size:38px;margin-bottom:10px;}
+.pw-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(20px,4vw,26px);color:var(--text);line-height:1.2;margin-bottom:8px;}
+.pw-title span{color:var(--blue);}
+.pw-body{font-size:15px;color:var(--text-mid);line-height:1.65;margin-bottom:18px;font-weight:600;max-width:480px;margin-left:auto;margin-right:auto;}
+.pw-stat{display:flex;align-items:center;justify-content:center;gap:14px;margin:0 auto 18px;background:var(--white);border:1px solid var(--blue-border);border-radius:var(--r);padding:14px 20px;max-width:360px;box-shadow:var(--shadow);}
+.pw-sn{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(38px,7vw,52px);color:var(--teal);line-height:1;}
+.pw-sm{font-size:14px;color:var(--text);font-weight:700;line-height:1.4;text-align:left;}
+.pw-ss{font-size:11px;color:var(--text-light);font-weight:600;margin-top:2px;text-align:left;}
+.pw-offers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 auto 18px;max-width:380px;}
+.oc{border:2px solid var(--border);border-radius:var(--r);padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--white);position:relative;}
+.oc:hover{border-color:var(--blue);}
+.oc.sel{border-color:var(--blue);background:var(--blue-pale);box-shadow:0 0 0 3px rgba(26,95,168,0.12);}
+.oc-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--blue);color:white;font-family:'Nunito',sans-serif;font-weight:800;font-size:10px;padding:2px 10px;border-radius:0 0 8px 8px;white-space:nowrap;}
+.oc-type{font-family:'Nunito',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.08em;color:var(--text-light);text-transform:uppercase;margin-bottom:6px;}
+.oc-price{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(28px,5vw,38px);color:var(--blue);line-height:1;margin-bottom:3px;letter-spacing:-1px;}
+.oc-desc{font-size:12px;color:var(--text-mid);font-weight:600;line-height:1.4;}
+
+/* PROGRAM */
+.prog-hero{text-align:center;padding:16px 0 12px;}
+.prog-lbl{font-family:'Nunito',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:4px;}
+.prog-freq{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(40px,8vw,56px);color:var(--blue);line-height:1;letter-spacing:-2px;}
+.prog-sub{font-size:14px;color:var(--text-mid);margin-top:4px;font-weight:600;}
+.ss-wrap{margin:16px 0;}
+.ss-lbl{font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:var(--text);margin-bottom:8px;}
+.ss-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ss-btn{background:var(--bg);border:2px solid var(--border);border-radius:var(--r);padding:12px 8px;cursor:pointer;text-align:center;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.ss-btn:hover,.ss-btn.sel{border-color:var(--blue);background:var(--blue-pale);}
+.ss-icon{font-size:22px;}
+.ss-name{font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;color:var(--text);}
+.ss-desc{font-size:11px;color:var(--text-light);font-weight:600;}
+.up-lbl{display:block;background:var(--bg);border:2px dashed var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;color:var(--text-mid);transition:all 0.2s;margin-top:8px;}
+.up-lbl:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale);}
+.cr{display:flex;align-items:center;gap:10px;margin:10px 0;}
+.cl2{font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;color:var(--text-mid);min-width:60px;}
+.cv{font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:var(--blue);min-width:48px;text-align:right;}
+input[type=range].sl{flex:1;height:5px;-webkit-appearance:none;background:var(--border);border-radius:3px;outline:none;cursor:pointer;}
+input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--blue);border:3px solid var(--white);box-shadow:0 1px 4px rgba(26,95,168,0.3);cursor:pointer;}
+.launch{display:block;width:100%;background:var(--blue);color:var(--white);border:none;border-radius:var(--r);padding:20px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(15px,2.5vw,18px);transition:all 0.25s;margin:18px 0 12px;box-shadow:0 4px 14px rgba(26,95,168,0.3);}
+.launch:hover{background:var(--blue-l);transform:translateY(-1px);}
+.launch.active{background:var(--teal);box-shadow:0 4px 14px rgba(14,138,122,0.3);}
+.ring-out{display:flex;justify-content:center;margin:16px 0 12px;}
+.ring-w{position:relative;width:120px;height:120px;}
+.ring-svg{transform:rotate(-90deg);}
+.r-bg{fill:none;stroke:var(--border);stroke-width:4;}
+.r-fg{fill:none;stroke:var(--blue);stroke-width:4;stroke-linecap:round;stroke-dasharray:314;stroke-dashoffset:314;transition:stroke-dashoffset 1s linear;}
+.ring-in{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.ring-t{font-family:'Nunito',sans-serif;font-weight:800;font-size:24px;color:var(--text);line-height:1;}
+.ring-u{font-size:10px;color:var(--text-light);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;}
+.sr{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.sd{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;transition:all 0.3s;}
+.sd.on{background:var(--blue);box-shadow:0 0 0 3px rgba(26,95,168,0.2);animation:pulse 2s infinite;}
+.sd.go{background:var(--teal);box-shadow:0 0 0 3px rgba(14,138,122,0.2);animation:pulse 1.5s infinite;}
+.st{font-size:13px;color:var(--text-light);font-weight:700;}
+.dur-l{display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);font-weight:700;margin-bottom:4px;}
+
+/* WELCOME */
+.wb{background:linear-gradient(135deg,var(--blue-pale),var(--teal-pale));border:2px solid var(--blue-border);border-radius:var(--r);padding:clamp(22px,4vw,38px);text-align:center;box-shadow:var(--shadow-lg);margin-bottom:14px;}
+.wi{font-size:44px;margin-bottom:12px;}
+.wt{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(18px,3vw,24px);color:var(--text);margin-bottom:6px;}
+.wf{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(48px,10vw,70px);color:var(--blue);line-height:1;letter-spacing:-2px;margin:12px 0 4px;}
+.wh{font-size:13px;color:var(--text-light);font-weight:700;letter-spacing:0.1em;margin-bottom:14px;}
+.ws{font-size:15px;color:var(--text-mid);font-weight:600;margin-bottom:18px;line-height:1.6;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:12px 20px;border-radius:var(--r);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;border:2px solid;background:transparent;transition:all 0.2s;}
+.btn-p{color:var(--white);background:var(--blue);border-color:var(--blue);}
+.btn-p:hover{background:var(--blue-l);border-color:var(--blue-l);}
+.btn-g{color:var(--text-mid);border-color:var(--border);}
+.btn-g:hover{background:var(--bg);border-color:var(--text-light);}
+.btn:disabled{opacity:0.35;cursor:not-allowed;pointer-events:none;}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+
+/* NOTE */
+.note{background:var(--blue-pale);border-left:4px solid var(--blue);border-radius:0 var(--r) var(--r) 0;padding:12px 16px;margin:12px 0;}
+.note p{font-size:14px;color:var(--text-mid);line-height:1.65;font-weight:600;}
+.note strong{color:var(--text);}
+
+/* FOOTER */
+.footer{background:var(--text);padding:28px 20px;text-align:center;width:100%;}
+.footer p{font-size:12px;color:rgba(255,255,255,0.45);font-weight:600;line-height:2.2;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+@media(min-width:768px){.si{padding:36px 28px;}}
+@media(min-width:1200px){.si{padding:44px 36px;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="hdr-logo-icon">🔊</div>
+    <span class="hdr-logo-text">SoundTao</span>
+  </div>
+  <h1 class="hdr-title">Le programme personnalisé<br>pour vos acouphènes</h1>
+  <p class="hdr-sub">Votre son thérapeutique, calibré sur votre fréquence exacte.<br>Vous appuyez sur un bouton. Vous dormez. Votre cerveau fait le reste.</p>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="prog-bar">
+  <div class="prog-inner">
+    <div class="pb active" id="pb1"><span class="pb-num">1</span>Votre son</div>
+    <div class="pb"        id="pb2"><span class="pb-num">2</span>Comparaison</div>
+    <div class="pb"        id="pb3"><span class="pb-num">3</span>Résultat</div>
+    <div class="pb"        id="pb4"><span class="pb-num">4</span>Programme</div>
+  </div>
+</div>
+
+<div class="section"><div class="si">
+
+  <!-- WELCOME BACK -->
+  <div class="fs hidden" id="fs-wb">
+    <div class="wb">
+      <div class="wi">👋</div>
+      <div class="wt">Bon retour !</div>
+      <p class="ws">Votre fréquence thérapeutique a été retrouvée :</p>
+      <div class="wf" id="wHz">—</div>
+      <div class="wh">HERTZ</div>
+      <p class="ws">Lancez directement votre séance ou recalibrez si votre acouphène a changé.</p>
+      <div class="brow" style="justify-content:center">
+        <button class="btn btn-p" style="padding:14px 26px;font-size:15px" onclick="goDirectProg()">☽ &nbsp;Lancer la séance</button>
+        <button class="btn btn-g" onclick="restartFull()">↺ &nbsp;Recalibrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 1 : TYPE DE SON -->
+  <div class="fs" id="fs1">
+    <div class="card">
+      <div class="cs">Étape 01</div>
+      <h2 class="ct">À quoi ressemble votre acouphène ?</h2>
+      <p class="cb">Choisissez le son qui se rapproche le plus de ce que vous entendez. Écoutez chaque exemple avant de choisir.</p>
+
+      <div class="sound-grid">
+        <div class="sound-btn sel" id="st-sine" onclick="selectSoundType('sine')">
+          <div class="sound-btn-top"><span class="sound-emoji">🔔</span><span class="sound-name">Sifflement net</span></div>
+          <div class="sound-desc">Son pur et constant, comme un appareil électronique</div>
+          <button class="sound-play" id="sp-sine" onclick="event.stopPropagation();previewSound('sine',3000)">▶ Écouter</button>
+        </div>
+        <div class="sound-btn" id="st-square" onclick="selectSoundType('square')">
+          <div class="sound-btn-top"><span class="sound-emoji">🔊</span><span class="sound-name">Bourdonnement</span></div>
+          <div class="sound-desc">Son grave et sourd, comme un moteur qui tourne</div>
+          <button class="sound-play" id="sp-square" onclick="event.stopPropagation();previewSound('square',200)">▶ Écouter</button>
+        </div>
+        <div class="sound-btn" id="st-sawtooth" onclick="selectSoundType('sawtooth')">
+          <div class="sound-btn-top"><span class="sound-emoji">⚡</span><span class="sound-name">Grésillement</span></div>
+          <div class="sound-desc">Son électrique et saccadé, comme des parasites</div>
+          <button class="sound-play" id="sp-sawtooth" onclick="event.stopPropagation();previewSound('sawtooth',1500)">▶ Écouter</button>
+        </div>
+        <div class="sound-btn" id="st-triangle" onclick="selectSoundType('triangle')">
+          <div class="sound-btn-top"><span class="sound-emoji">〰️</span><span class="sound-name">Son doux continu</span></div>
+          <div class="sound-desc">Tonalité douce et régulière, moins agressive</div>
+          <button class="sound-play" id="sp-triangle" onclick="event.stopPropagation();previewSound('triangle',2000)">▶ Écouter</button>
+        </div>
+        <div class="sound-btn" id="st-noise-b" onclick="selectSoundType('noise-b')">
+          <div class="sound-btn-top"><span class="sound-emoji">📻</span><span class="sound-name">Bruit de fond</span></div>
+          <div class="sound-desc">Bruit large et constant, comme une ventilation</div>
+          <button class="sound-play" id="sp-noise-b" onclick="event.stopPropagation();previewSound('noise-b',1000)">▶ Écouter</button>
+        </div>
+        <div class="sound-btn" id="st-noise-w" onclick="selectSoundType('noise-w')">
+          <div class="sound-btn-top"><span class="sound-emoji">🌊</span><span class="sound-name">Souffle blanc</span></div>
+          <div class="sound-desc">Bruit blanc large, comme de la pluie ou des vagues</div>
+          <button class="sound-play" id="sp-noise-w" onclick="event.stopPropagation();previewSound('noise-w',2000)">▶ Écouter</button>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <h2 class="ct">Dans quelle zone se situe votre acouphène ?</h2>
+        <p class="cb" style="margin-bottom:14px">Écoutez d'abord les trois exemples, puis sélectionnez la zone qui ressemble le plus à votre acouphène.</p>
+
+        <!-- Boutons écoute séparés -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+          <button class="sound-play" style="padding:12px 8px;border-radius:10px;font-size:13px;width:100%;justify-content:center" id="pz-low" onclick="previewZone('low')">▶ &nbsp;Grave</button>
+          <button class="sound-play" style="padding:12px 8px;border-radius:10px;font-size:13px;width:100%;justify-content:center" id="pz-mid" onclick="previewZone('mid')">▶ &nbsp;Médium</button>
+          <button class="sound-play" style="padding:12px 8px;border-radius:10px;font-size:13px;width:100%;justify-content:center" id="pz-high" onclick="previewZone('high')">▶ &nbsp;Aigu</button>
+        </div>
+
+        <!-- Boutons sélection -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <button class="prof-btn" onclick="selectProf('low')" id="pp-low">
+            <span class="prof-icon">🔉</span>
+            <div class="prof-name">Grave</div>
+            <div class="prof-desc">Bourdonnement sourd, ronronnement</div>
+            <div class="prof-hz">125–800 Hz</div>
+          </button>
+          <button class="prof-btn" onclick="selectProf('mid')" id="pp-mid">
+            <span class="prof-icon">〰️</span>
+            <div class="prof-name">Médium</div>
+            <div class="prof-desc">Sonnerie, tonalité de téléphone</div>
+            <div class="prof-hz">800–3 000 Hz</div>
+          </button>
+          <button class="prof-btn" onclick="selectProf('high')" id="pp-high">
+            <span class="prof-icon">🔊</span>
+            <div class="prof-name">Aigu</div>
+            <div class="prof-desc">Sifflement perçant, strident</div>
+            <div class="prof-hz">3 000–8 000 Hz</div>
+          </button>
+        </div>
+        <div style="text-align:center;margin-top:10px">
+          <button class="skip-btn" style="font-size:13px;color:var(--text-light)" onclick="selectProf('wide')">Je n'arrive pas à identifier la zone — lancer une analyse complète</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow" id="arr1">↓</div>
+
+  <!-- ÉTAPE 2 : COMPARAISONS -->
+  <div class="fs hidden" id="fs2">
+    <div class="card">
+      <div class="cs">Étape 02</div>
+      <h2 class="ct">Trouvons votre fréquence exacte</h2>
+      <p class="cb" style="margin-bottom:4px">Écoutez Son A, puis Son B. Choisissez celui qui ressemble le plus à votre acouphène.</p>
+      <p style="font-size:16px;color:var(--teal);font-weight:800;margin-bottom:14px">✓ Pas besoin d'être précis à 100% — une approximation suffit.</p>
+
+      <div class="rt-wrap" id="rtWrap"></div>
+      <div class="rl">Comparaison <span id="rNum">1</span> / <span id="rTotal">10</span></div>
+      <div class="cq">Lequel ressemble le plus à votre acouphène ?</div>
+
+      <div class="cl-row">
+        <button class="cl A" id="clA" onclick="listenTo('A')">
+          <div class="cl-top"><div class="cl-letter">Son A</div><div class="cl-freq" id="hzA">—</div><div class="cl-hz">Hz</div><div class="cl-state" id="stA">Appuyez pour écouter</div></div>
+          <div class="cl-bar"><div class="cl-bar-in" id="barA"></div></div>
+        </button>
+        <button class="cl B" id="clB" onclick="listenTo('B')">
+          <div class="cl-top"><div class="cl-letter">Son B</div><div class="cl-freq" id="hzB">—</div><div class="cl-hz">Hz</div><div class="cl-state" id="stB">Appuyez pour écouter</div></div>
+          <div class="cl-bar"><div class="cl-bar-in" id="barB"></div></div>
+        </button>
+      </div>
+
+      <div class="cfm-row">
+        <button class="cfm A" id="cfmA" onclick="confirmChoice('A')" disabled>✓ &nbsp;C'est le Son A</button>
+        <button class="cfm B" id="cfmB" onclick="confirmChoice('B')" disabled>✓ &nbsp;C'est le Son B</button>
+      </div>
+      <button class="exact-btn" id="cfmExact" onclick="exactMatch()" disabled>⬤ &nbsp;C'est exactement ce son — valider maintenant</button>
+      <button class="skip-btn" onclick="skipRound()" style="background:#f0f0f0;border:2px solid #d0d0d0;border-radius:var(--r);padding:14px 16px;cursor:pointer;width:100%;text-align:center;text-decoration:none;transition:all 0.2s;margin-top:4px">
+        <span style="font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;color:#666;display:block">Ces sons ne correspondent pas — continuer</span>
+        <span style="font-size:12px;color:#999;font-style:italic;display:block;margin-top:3px">L'algorithme continue à affiner votre fréquence automatiquement</span>
+      </button>
+      <button onclick="goManualDirect()" style="background:var(--blue-pale);border:2px solid var(--blue);border-radius:var(--r);padding:14px 16px;cursor:pointer;width:100%;text-align:center;margin-top:8px;transition:all 0.2s">
+        <span style="font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:var(--blue);display:block">🎯 &nbsp;Je préfère trouver moi-même ma fréquence</span>
+        <span style="font-size:12px;color:var(--text-light);font-style:italic;display:block;margin-top:3px">Réglage manuel — ajustez Hz par Hz jusqu'à trouver votre son exact</span>
+      </button>
+      <div class="hint" id="cmpHint">Écoutez d'abord les deux sons avant de confirmer</div>
+    </div>
+  </div>
+
+  <div class="arrow" id="arr2">↓</div>
+
+  <!-- ÉTAPE 3 : RÉSULTAT -->
+  <div class="fs hidden" id="fs3">
+    <div class="card">
+      <div class="cs">Étape 03 — Fréquence identifiée</div>
+      <h2 class="ct">Votre profil thérapeutique</h2>
+      <div class="res-c">
+        <div class="res-num" id="resNum">—</div>
+        <div class="res-hz">HERTZ</div>
+        <div class="res-prof" id="resProf"></div>
+      </div>
+      <div style="background:var(--blue-pale);border:1px solid var(--blue-border);border-radius:var(--r);padding:10px 14px;margin:10px 0;text-align:center">
+        <p style="font-size:14px;color:var(--text-mid);font-weight:600">✓ &nbsp;La correspondance n'a pas besoin d'être parfaite — une approximation suffit pour que la thérapie fonctionne.</p>
+      </div>
+      <div class="nb">
+        <div class="nb-lbl">Zone thérapeutique calculée</div>
+        <p>Fréquence centrale : <strong id="nFreq">—</strong> &nbsp;|&nbsp; Zone supprimée : <strong id="nRange">—</strong> &nbsp;|&nbsp; Largeur : <strong id="nWidth">—</strong></p>
+      </div>
+      <div class="spec"><canvas id="specCanvas"></canvas></div>
+
+      <!-- Confusion d'octave -->
+      <div class="oct-box" id="octBox" style="display:none">
+        <div class="oct-title">⚠ Vérification — confusion d'octave</div>
+        <p style="font-size:13px;color:var(--text-mid);font-weight:600;line-height:1.6;margin-bottom:10px">Votre acouphène est-il plutôt à la moitié ou au double de la fréquence trouvée ? Écoutez et confirmez.</p>
+        <div class="oct-grid">
+          <button class="oct-btn" id="octBtnA" onclick="selectOctave('half')">
+            <span class="oct-freq" id="octHzA">—</span>
+            <span class="oct-label">Moitié</span>
+          </button>
+          <button class="oct-btn sel" id="octBtnB" onclick="selectOctave('same')">
+            <span class="oct-freq" id="octHzB" style="color:var(--blue)">—</span>
+            <span class="oct-label">Actuel ✓</span>
+          </button>
+          <button class="oct-btn" id="octBtnC" onclick="selectOctave('double')">
+            <span class="oct-freq" id="octHzC">—</span>
+            <span class="oct-label">Double</span>
+          </button>
+        </div>
+        <div class="oct-actions">
+          <button class="btn btn-g" style="font-size:11px;padding:7px 12px" onclick="playOctave('half')">▶ Moitié</button>
+          <button class="btn btn-g" style="font-size:11px;padding:7px 12px" onclick="playOctave('same')">▶ Actuel</button>
+          <button class="btn btn-g" style="font-size:11px;padding:7px 12px" onclick="playOctave('double')">▶ Double</button>
+          <button class="btn btn-p" style="font-size:11px;padding:7px 12px" onclick="confirmOctave()">✓ Confirmer</button>
+        </div>
+      </div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin:8px 0">
+        <p style="font-size:13px;color:var(--text-light);font-weight:600;line-height:1.5">💡 <strong style="color:var(--text-mid)">Plusieurs acouphènes ?</strong> Commencez par le plus gênant — vous pourrez recalibrer ensuite.</p>
+      </div>
+
+      <div class="brow">
+        <button class="btn btn-g" id="btnMan" onclick="toggleMan()"><span id="manTxt">✎ &nbsp;Affiner manuellement</span></button>
+        <button class="btn btn-g" onclick="restartFull()">↺ &nbsp;Recommencer</button>
+      </div>
+
+      <div id="manPanel" style="display:none">
+        <div class="man-panel">
+          <div class="man-lbl">Ajustement précis</div>
+          <p class="man-desc" id="manDesc">Le son joue en continu. Ajustez Hz par Hz jusqu'à trouver votre fréquence exacte.</p>
+          <div class="man-fc">
+            <span class="man-hz" id="manHz">1000</span>
+            <span class="man-unit">HERTZ</span>
+            <span class="man-range" id="manRange"></span>
+          </div>
+          <div class="man-ctrl">
+            <button class="mc minus" onpointerdown="startStep(-10)" onpointerup="stopStep()" onpointerleave="stopStep()"><span class="mc-lbl">−10</span><span class="mc-sub">Hz</span></button>
+            <button class="mc minus" onpointerdown="startStep(-1)" onpointerup="stopStep()" onpointerleave="stopStep()"><span class="mc-lbl">−1</span><span class="mc-sub">Hz</span></button>
+            <button class="mc" onpointerdown="startStep(1)" onpointerup="stopStep()" onpointerleave="stopStep()"><span class="mc-lbl">+1</span><span class="mc-sub">Hz</span></button>
+            <button class="mc" onpointerdown="startStep(10)" onpointerup="stopStep()" onpointerleave="stopStep()"><span class="mc-lbl">+10</span><span class="mc-sub">Hz</span></button>
+          </div>
+          <div class="man-wave"><canvas id="manCanvas"></canvas></div>
+          <div class="brow"><button class="btn btn-p" onclick="validateMan()">✓ &nbsp;Valider cette fréquence</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYWALL -->
+    <div class="pw" id="pwDiv">
+      <div class="pw-icon">🎯</div>
+      <h2 class="pw-title">Votre son est <span>prêt</span></h2>
+      <p class="pw-body">Votre fréquence est identifiée. Ce soir, vous appuyez sur un bouton. Vous dormez. Votre cerveau fait le reste.</p>
+      <div class="pw-stat">
+        <div class="pw-sn">65%</div>
+        <div>
+          <div class="pw-sm">des personnes soulagées<br>en 12 semaines</div>
+          <div class="pw-ss">Étude clinique publiée — 2012¹</div>
+        </div>
+      </div>
+      <div class="pw-offers">
+        <div class="oc" id="oc1" onclick="selectOffer(1)">
+          <div class="oc-type">Programme</div>
+          <div class="oc-price">47€</div>
+          <div class="oc-desc">Accès 12 semaines<br>Séances illimitées</div>
+        </div>
+        <div class="oc sel" id="oc2" onclick="selectOffer(2)">
+          <div class="oc-badge">Recommandé</div>
+          <div class="oc-type" style="margin-top:14px">Abonnement</div>
+          <div class="oc-price">67€</div>
+          <div class="oc-desc">Accès 1 an<br>Séances illimitées</div>
+        </div>
+      </div>
+      <button class="btn btn-p" style="margin:0 auto;padding:16px 32px;font-size:15px;display:flex;box-shadow:0 4px 14px rgba(26,95,168,0.3)" onclick="simulatePurchase()">
+        <span id="buyTxt">→ &nbsp;Accéder à mon programme — 67 €/an</span>
+      </button>
+      <p style="font-size:11px;color:var(--text-light);margin-top:14px;line-height:1.9;font-weight:600;">
+        Accès immédiat après paiement. Droit de rétractation 14 jours — art. L221-28 du Code de la consommation.<br>
+        Les premiers effets apparaissent entre la 3ème et la 6ème semaine.<br>
+        <span style="font-size:10px;opacity:0.8">¹ Reavis K.M. et al. — Notched Music Therapy for Tinnitus — University of Auckland — JARO, 2012.</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="arrow" id="arr3">↓</div>
+
+  <!-- ÉTAPE 4 : PROGRAMME -->
+  <div class="fs hidden" id="fs4">
+    <div class="card">
+      <div class="cs">Votre programme</div>
+      <div class="prog-hero">
+        <div class="prog-lbl">Fréquence thérapeutique</div>
+        <div class="prog-freq" id="progHz">—</div>
+        <div class="prog-sub">Son notché personnalisé</div>
+      </div>
+      <div class="note"><p><strong>Ce soir et chaque soir :</strong> volume très bas — juste audible — appuyez sur le bouton, posez le téléphone et dormez. C'est tout.</p></div>
+
+      <div class="ss-wrap">
+        <div class="ss-lbl">Son thérapeutique</div>
+        <div class="ss-grid">
+          <button class="ss-btn sel" id="ss-pink" onclick="selectSound('pink')"><span class="ss-icon">🌊</span><span class="ss-name">Bruit rose</span><span class="ss-desc">Le plus efficace</span></button>
+          <button class="ss-btn" id="ss-rain" onclick="selectSound('rain')"><span class="ss-icon">🌙</span><span class="ss-name">Vagues</span><span class="ss-desc">Doux, pour dormir</span></button>
+          <button class="ss-btn" id="ss-music" onclick="selectSound('music')"><span class="ss-icon">🎵</span><span class="ss-name">Ma musique</span><span class="ss-desc">Votre MP3</span></button>
+        </div>
+        <div id="musicUpload" style="display:none">
+          <label class="up-lbl" onclick="document.getElementById('mFile').click()">
+            <input type="file" id="mFile" accept="audio/*" onchange="loadMusic(this)" style="display:none">
+            <span id="upTxt">📂 &nbsp;Choisir un fichier audio</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="cr"><span class="cl2">Volume</span><input type="range" class="sl" id="volS" min="1" max="100" value="18" oninput="setVol(this.value)"><span class="cv" id="volV">18%</span></div>
+      <div class="dur-l"><span>15 min</span><span>45 min</span><span>90 min</span></div>
+      <div class="cr"><span class="cl2">Durée</span><input type="range" class="sl" id="durS" min="15" max="90" value="45" step="5" oninput="setDur(this.value)"><span class="cv" id="durV">45 min</span></div>
+
+      <div class="ring-out">
+        <div class="ring-w">
+          <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+            <circle class="r-bg" cx="60" cy="60" r="50"/>
+            <circle class="r-fg" id="rFg" cx="60" cy="60" r="50"/>
+          </svg>
+          <div class="ring-in"><div class="ring-t" id="rTime">45:00</div><div class="ring-u">min</div></div>
+        </div>
+      </div>
+
+      <button class="launch" id="launchBtn" onclick="toggleSess()">
+        <span id="launchTxt">☽ &nbsp;Lancer la séance du soir</span>
+      </button>
+      <div class="sr"><div class="sd" id="sdot"></div><span class="st" id="stxt">Prêt</span></div>
+    </div>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn btn-g" onclick="restartFull()" style="margin:0 auto">↺ &nbsp;Modifier ma fréquence</button>
+    </div>
+  </div>
+
+</div></div>
+
+<div class="footer">
+  <p>SoundTao — Programme 12 semaines</p>
+  <p>Ce programme ne remplace pas un avis médical</p>
+</div>
+</div>
+
+<script>
+// ================================================================
+// STORAGE
+// ================================================================
+const SK='st_freq';
+function saveF(hz){try{localStorage.setItem(SK,hz);}catch(e){}}
+function loadF(){try{return parseInt(localStorage.getItem(SK))||null;}catch(e){return null;}}
+function clearF(){try{localStorage.removeItem(SK);}catch(e){}}
+
+// ================================================================
+// INIT
+// ================================================================
+window.addEventListener('load',()=>{
+  const s=loadF();
+  if(s&&s>=125&&s<=8000){
+    finalHz=s;
+    document.getElementById('wHz').textContent=s;
+    show('fs-wb');setBar(4);
+  } else {
+    show('fs1');setBar(1);
+  }
+  ringSet(0);
+});
+
+function show(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.classList.remove('hidden');
+  setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),150);
+}
+function showArrow(id){const el=document.getElementById(id);if(el)el.style.display='block';}
+
+function setBar(n){
+  [1,2,3,4].forEach(i=>{
+    const el=document.getElementById('pb'+i);
+    if(el)el.className='pb'+(i<n?' done':i===n?' active':'');
+  });
+}
+
+function goDirectProg(){
+  document.getElementById('progHz').textContent=finalHz+' Hz';
+  ringSet(0);
+  const v=parseInt(document.getElementById('durS').value);
+  document.getElementById('rTime').textContent=String(v).padStart(2,'0')+':00';
+  show('fs4');setBar(4);
+}
+
+function restartFull(){clearF();finalHz=null;profKey=null;stopAll();location.reload();}
+
+function goManualDirect(){
+  // Prendre la meilleure estimation actuelle comme point de départ
+  stopAllCmp();
+  const mid=Math.round(Math.sqrt(rLow*rHigh));
+  finalHz=Math.max(125,Math.min(8000,mid));
+  saveF(finalHz);
+  const p=PROFS[profKey||'wide'];
+  const nL=Math.round(finalHz/Math.sqrt(2)),nH=Math.round(finalHz*Math.sqrt(2));
+  document.getElementById('resNum').textContent=finalHz;
+  document.getElementById('resProf').textContent='Affinez ci-dessous pour trouver votre fréquence exacte';
+  document.getElementById('nFreq').textContent=finalHz+' Hz';
+  document.getElementById('nRange').textContent=nL+' – '+nH+' Hz';
+  document.getElementById('nWidth').textContent=p.notchW;
+  manFreq=finalHz;
+  showArrow('arr2');show('fs3');setBar(3);
+  setTimeout(()=>{
+    drawSpec(finalHz);
+    showOctCheck(finalHz);
+    // Ouvrir directement le panneau manuel
+    document.getElementById('manPanel').style.display='block';
+    document.getElementById('manTxt').textContent='✖ Fermer';
+    manOpen=true;updateManD();startManTone();
+    // Scroller jusqu'au panneau manuel
+    setTimeout(()=>{
+      document.getElementById('manPanel').scrollIntoView({behavior:'smooth',block:'center'});
+    },400);
+  },300);
+}
+
+// ================================================================
+// AUDIO
+// ================================================================
+let AC=null;
+function getAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC;}
+
+function makeNode(freq,type){
+  const c=getAC();
+  if(type==='noise-b'||type==='noise-w'){
+    const sr=c.sampleRate,dur=4;
+    const buf=c.createBuffer(1,sr*dur,sr),d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.3;
+    const src=c.createBufferSource();src.buffer=buf;src.loop=true;
+    if(type==='noise-b'){const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=freq;bp.Q.value=2;src.connect(bp);return{node:src,out:bp};}
+    return{node:src,out:src};
+  }
+  const osc=c.createOscillator();
+  osc.type=type==='sine'?'sine':type==='square'?'square':type==='sawtooth'?'sawtooth':'triangle';
+  osc.frequency.value=freq;
+  return{node:osc,out:osc};
+}
+
+// Preview sounds on step 1
+let prevNode=null,prevGain=null,prevCurrentType=null;
+function previewSound(type,freq){
+  // Si ce son joue déjà — on l'arrête
+  if(prevCurrentType===type){stopPreview();return;}
+  stopPreview();
+  const freqMap={'sine':3000,'square':250,'sawtooth':1500,'triangle':2000,'noise-b':2000,'noise-w':2000};
+  const f=freqMap[type]||freq;
+  const c=getAC();
+  const{node,out}=makeNode(f,type);
+  prevGain=c.createGain();
+  prevGain.gain.setValueAtTime(0,c.currentTime);
+  prevGain.gain.linearRampToValueAtTime(0.3,c.currentTime+0.05);
+  out.connect(prevGain);prevGain.connect(c.destination);node.start();
+  prevNode=node;prevCurrentType=type;
+  // Mettre le bouton en état "stop"
+  document.querySelectorAll('.sound-play').forEach(b=>{b.classList.remove('playing');b.textContent='▶ Écouter';});
+  const btn=document.getElementById('sp-'+type);
+  if(btn){btn.classList.add('playing');btn.textContent='⏹ Arrêter';}
+}
+
+function stopPreview(){
+  if(prevNode){
+    try{if(prevGain)prevGain.gain.linearRampToValueAtTime(0,getAC().currentTime+0.08);}catch(e){}
+    setTimeout(()=>{try{prevNode.stop();}catch(e){} prevNode=null;},150);
+  }
+  prevCurrentType=null;
+  document.querySelectorAll('.sound-play').forEach(b=>{b.classList.remove('playing');b.textContent='▶ Écouter';});
+}
+
+function previewZone(zone){
+  // Si cette zone joue déjà — on l'arrête
+  if(prevCurrentType==='zone-'+zone){stopPreview();return;}
+  stopPreview();
+  const freqMap={low:350,mid:1500,high:5000};
+  const f=freqMap[zone]||1000;
+  const c=getAC();
+  const{node,out}=makeNode(f,waveType);
+  prevGain=c.createGain();
+  prevGain.gain.setValueAtTime(0,c.currentTime);
+  prevGain.gain.linearRampToValueAtTime(0.3,c.currentTime+0.05);
+  out.connect(prevGain);prevGain.connect(c.destination);node.start();
+  prevNode=node;prevCurrentType='zone-'+zone;
+  const labels={low:'Grave',mid:'Médium',high:'Aigu'};
+  ['low','mid','high'].forEach(z=>{
+    const btn=document.getElementById('pz-'+z);
+    if(btn){btn.classList.remove('playing');btn.textContent='▶ '+labels[z];}
+  });
+  const btn=document.getElementById('pz-'+zone);
+  if(btn){btn.classList.add('playing');btn.textContent='⏹ Arrêter';}
+}
+function stopPreview(){
+  if(prevNode){try{prevNode.stop();}catch(e){} prevNode=null;}
+}
+
+// Sound type selection
+let waveType='sine';
+function selectSoundType(type){
+  waveType=type;
+  document.querySelectorAll('.sound-btn').forEach(b=>b.classList.remove('sel'));
+  const el=document.getElementById('st-'+type);
+  if(el)el.classList.add('sel');
+}
+
+// Comparison tones
+let cmpN={A:null,B:null},barT={A:null,B:null};
+let heard={A:false,B:false},lastH=null;
+
+function listenTo(side){
+  if(cmpN[side]){stopCmp(side);return;}
+  const other=side==='A'?'B':'A';
+  if(cmpN[other])stopCmp(other);
+  stopPreview();
+  const freq=side==='A'?freqA:freqB;
+  const c=getAC();
+  const{node,out}=makeNode(freq,waveType);
+  const g=c.createGain();g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(0.35,c.currentTime+0.08);
+  out.connect(g);g.connect(c.destination);node.start();
+  cmpN[side]={node,g};
+  document.getElementById('cl'+side).classList.add('on');
+  document.getElementById('st'+side).textContent='⏸ En écoute — appuyez pour arrêter';
+  let p=0;barT[side]=setInterval(()=>{p=(p+1)%101;document.getElementById('bar'+side).style.width=p+'%';},30);
+  heard[side]=true;lastH=side;updateCfm();
+  document.getElementById('cmpHint').textContent='Son '+side+' — '+freq+' Hz — en écoute';
+}
+function stopCmp(side){
+  if(!cmpN[side])return;
+  const{node,g}=cmpN[side];
+  try{g.gain.linearRampToValueAtTime(0,getAC().currentTime+0.08);}catch(e){}
+  setTimeout(()=>{try{node.stop();}catch(e){}},150);
+  cmpN[side]=null;
+  clearInterval(barT[side]);barT[side]=null;
+  document.getElementById('bar'+side).style.width='0%';
+  document.getElementById('cl'+side).classList.remove('on');
+  document.getElementById('st'+side).textContent='Appuyez pour écouter';
+}
+function stopAllCmp(){stopCmp('A');stopCmp('B');}
+
+function updateCfm(){
+  const any=heard.A||heard.B;
+  ['cfmA','cfmB','cfmExact'].forEach(id=>document.getElementById(id).disabled=!any);
+  if(heard.A&&heard.B)document.getElementById('cmpHint').textContent='Confirmez votre choix ci-dessous';
+  else if(any)document.getElementById('cmpHint').textContent='Vous pouvez aussi écouter l\'autre son';
+}
+
+// ================================================================
+// CALIBRATION
+// ================================================================
+const PROFS={
+  low:{min:125,max:800,label:'Acouphène grave',notchW:'1.2 octave'},
+  mid:{min:800,max:3000,label:'Acouphène médium',notchW:'1 octave'},
+  high:{min:3000,max:8000,label:'Acouphène aigu',notchW:'1 octave'},
+  wide:{min:125,max:8000,label:'Profil large bande',notchW:'1.5 octave'}
+};
+let profKey=null,rLow=0,rHigh=0,freqA=0,freqB=0;
+let roundIdx=0;const ROUNDS=5;
+let candidates=[],finalHz=null;
+
+function selectProf(key){
+  document.querySelectorAll('.prof-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('pp-'+key).classList.add('sel');
+  profKey=key;
+  setTimeout(()=>beginCalib(key),250);
+}
+
+function beginCalib(key){
+  const p=PROFS[key];rLow=p.min;rHigh=p.max;
+  candidates=[];roundIdx=0;heard={A:false,B:false};lastH=null;
+  const tr=document.getElementById('rtWrap');tr.innerHTML='';
+  for(let i=0;i<ROUNDS;i++){const d=document.createElement('div');d.className='rt'+(i===0?' now':'');d.id='rt'+i;tr.appendChild(d);}
+  document.getElementById('rTotal').textContent=ROUNDS;
+  showArrow('arr1');show('fs2');setBar(2);genRound();
+}
+
+function genRound(){
+  stopAllCmp();heard={A:false,B:false};lastH=null;
+  ['cfmA','cfmB','cfmExact'].forEach(id=>document.getElementById(id).disabled=true);
+  ['clA','clB'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('stA').textContent='Appuyez pour écouter';
+  document.getElementById('stB').textContent='Appuyez pour écouter';
+  document.getElementById('barA').style.width='0%';
+  document.getElementById('barB').style.width='0%';
+  document.getElementById('cmpHint').textContent='Écoutez d\'abord les deux sons avant de confirmer';
+  const logL=Math.log2(rLow),logH=Math.log2(rHigh),logR=logH-logL;
+  const split=0.3+Math.random()*0.4;
+  freqA=Math.round(Math.pow(2,logL+Math.random()*logR*split));
+  freqB=Math.round(Math.pow(2,logL+logR*(0.5+Math.random()*0.5)));
+  freqA=Math.max(rLow,Math.min(rHigh,freqA));
+  freqB=Math.max(rLow,Math.min(rHigh,freqB));
+  if(freqA===freqB)freqB=Math.min(rHigh,freqA+Math.round(freqA*0.3));
+  document.getElementById('hzA').textContent=freqA;
+  document.getElementById('hzB').textContent=freqB;
+  document.getElementById('rNum').textContent=roundIdx+1;
+  for(let i=0;i<ROUNDS;i++){const el=document.getElementById('rt'+i);if(el)el.className='rt'+(i<roundIdx?' done':i===roundIdx?' now':'');}
+}
+
+function confirmChoice(side){const freq=side==='A'?freqA:freqB;candidates.push(freq);narrowRange(freq);advance();}
+function exactMatch(){const side=lastH||(heard.A?'A':'B');const freq=side==='A'?freqA:freqB;finalHz=Math.round(freq);saveF(finalHz);stopAllCmp();showResult(finalHz,false);}
+function skipRound(){stopAllCmp();advance();}
+
+function narrowRange(chosen){
+  const logC=Math.log2(chosen),logL=Math.log2(rLow),logH=Math.log2(rHigh),logR=logH-logL;
+  const shrink=logR*0.30,logMid=(logL+logH)/2;
+  const pulled=logMid+(logC-logMid)*0.35,half=(logR-shrink)/2;
+  rLow=Math.round(Math.pow(2,Math.max(Math.log2(PROFS[profKey||'wide'].min),pulled-half)));
+  rHigh=Math.round(Math.pow(2,Math.min(Math.log2(PROFS[profKey||'wide'].max),pulled+half)));
+  if(rHigh/rLow<1.4){const m=Math.sqrt(rLow*rHigh);rLow=Math.round(m/1.18);rHigh=Math.round(m*1.18);}
+}
+function advance(){roundIdx++;if(roundIdx>=ROUNDS)finishCalib();else setTimeout(genRound,250);}
+
+function finishCalib(){
+  stopAllCmp();
+  if(candidates.length===0)candidates.push(Math.round(Math.sqrt(rLow*rHigh)));
+  const sorted=[...candidates].sort((a,b)=>a-b);
+  finalHz=Math.round(sorted[Math.floor(sorted.length/2)]);
+  finalHz=Math.max(125,Math.min(8000,finalHz));
+  saveF(finalHz);
+  showResult(finalHz,candidates.length<ROUNDS/2);
+}
+
+function showResult(freq,notFound){
+  const p=PROFS[profKey||'wide'];
+  const nL=Math.round(freq/Math.sqrt(2)),nH=Math.round(freq*Math.sqrt(2));
+  document.getElementById('resNum').textContent=freq;
+  document.getElementById('resProf').textContent=notFound?'Fréquence estimée — affinez ci-dessous':p.label;
+  document.getElementById('nFreq').textContent=freq+' Hz';
+  document.getElementById('nRange').textContent=nL+' – '+nH+' Hz';
+  document.getElementById('nWidth').textContent=p.notchW;
+  manFreq=Math.max(125,Math.min(8000,freq));
+  showArrow('arr2');show('fs3');setBar(3);
+  setTimeout(()=>{
+    drawSpec(freq);
+    showOctCheck(freq);
+    if(notFound){
+      document.getElementById('manDesc').textContent='Fréquence estimée. Ajustez avec les boutons +/- pour trouver votre son exact.';
+      document.getElementById('manPanel').style.display='block';
+      document.getElementById('manTxt').textContent='✖ Fermer';
+      manOpen=true;updateManD();startManTone();
+    }
+  },300);
+}
+
+// ================================================================
+// MANUAL +/-
+// ================================================================
+let manOpen=false,manOsc=null,manGN=null,manPlay=false,manAnim=null;
+let manFreq=1000,stepInt=null;
+
+function toggleMan(){
+  manOpen=!manOpen;
+  document.getElementById('manPanel').style.display=manOpen?'block':'none';
+  document.getElementById('manTxt').textContent=manOpen?'✖ Fermer':'✎ Affiner manuellement';
+  if(manOpen){manFreq=finalHz||1000;updateManD();startManTone();}
+  else stopManTone();
+}
+function updateManD(){
+  document.getElementById('manHz').textContent=manFreq;
+  const nL=Math.round(manFreq/Math.sqrt(2)),nH=Math.round(manFreq*Math.sqrt(2));
+  document.getElementById('manRange').textContent='Zone notchée : '+nL+' – '+nH+' Hz';
+  if(manOsc)manOsc.frequency.setValueAtTime(manFreq,getAC().currentTime);
+}
+function startStep(d){stopStep();applyStep(d);stepInt=setInterval(()=>applyStep(d),100);}
+function stopStep(){clearInterval(stepInt);stepInt=null;}
+function applyStep(d){manFreq=Math.max(125,Math.min(8000,manFreq+d));updateManD();}
+function startManTone(){
+  stopManTone();
+  const c=getAC();manOsc=c.createOscillator();manGN=c.createGain();
+  manOsc.type='sine';manOsc.frequency.value=manFreq;
+  manGN.gain.setValueAtTime(0,c.currentTime);manGN.gain.linearRampToValueAtTime(0.35,c.currentTime+0.08);
+  manOsc.connect(manGN);manGN.connect(c.destination);manOsc.start();
+  manPlay=true;animMan();
+}
+function stopManTone(){
+  if(manOsc){try{manGN.gain.linearRampToValueAtTime(0,getAC().currentTime+0.06);}catch(e){}
+  setTimeout(()=>{try{manOsc.stop();}catch(e){}; manOsc=null;},120);}
+  manPlay=false;cancelAnimationFrame(manAnim);
+}
+function animMan(){if(!manPlay)return;drawManW();manAnim=requestAnimationFrame(animMan);}
+function drawManW(){
+  const cv=document.getElementById('manCanvas');
+  if(!cv||!cv.offsetWidth)return;
+  const ctx=cv.getContext('2d');
+  const W=cv.offsetWidth,H=cv.offsetHeight;
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const t=performance.now()/1000;
+  ctx.clearRect(0,0,W,H);ctx.strokeStyle='#1a5fa8';ctx.lineWidth=2;ctx.beginPath();
+  for(let x=0;x<W;x++){const ph=(x/W)*4*Math.PI+t*(manFreq/180);const y=H/2+Math.sin(ph)*(H*0.32);x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+  ctx.stroke();
+}
+function validateMan(){
+  finalHz=manFreq;saveF(finalHz);stopManTone();  const nL=Math.round(finalHz/Math.sqrt(2)),nH=Math.round(finalHz*Math.sqrt(2));
+  document.getElementById('resNum').textContent=finalHz;
+  document.getElementById('nFreq').textContent=finalHz+' Hz';
+  document.getElementById('nRange').textContent=nL+' – '+nH+' Hz';
+  manOpen=false;document.getElementById('manPanel').style.display='none';
+  document.getElementById('manTxt').textContent='✎ Affiner manuellement';
+  setTimeout(()=>drawSpec(finalHz),100);
+}
+
+// ================================================================
+// SPECTRUM
+// ================================================================
+function drawSpec(f){
+  const cv=document.getElementById('specCanvas');
+  if(!cv||!cv.offsetWidth)return;
+  const cx=cv.getContext('2d');
+  const W=cv.offsetWidth,H=cv.offsetHeight;
+  const dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr;cv.height=H*dpr;
+  cv.style.width=W+'px';cv.style.height=H+'px';
+  cx.scale(dpr,dpr);
+  const toX=freq=>(Math.log(freq/80)/Math.log(10000/80))*W;
+  const nL=f/Math.sqrt(2),nH=f*Math.sqrt(2);
+  const xC=toX(f),x1=toX(nL),x2=toX(nH);
+
+  // Noise floor — zone bleue en bas
+  const g=cx.createLinearGradient(0,0,W,0);
+  g.addColorStop(0,'rgba(26,95,168,0.18)');g.addColorStop(0.5,'rgba(26,95,168,0.12)');g.addColorStop(1,'rgba(26,95,168,0.07)');
+  cx.fillStyle=g;cx.fillRect(0,H*0.58,W,H*0.26);
+
+  // Notch — creux dans la zone bleue
+  cx.clearRect(x1,H*0.58,x2-x1,H*0.26);
+
+  // Lignes pointillées notch
+  cx.strokeStyle='rgba(26,95,168,0.3)';cx.lineWidth=1;cx.setLineDash([3,3]);
+  cx.beginPath();cx.moveTo(x1,H*0.30);cx.lineTo(x1,H*0.92);cx.moveTo(x2,H*0.30);cx.lineTo(x2,H*0.92);cx.stroke();cx.setLineDash([]);
+
+  // Flèche rouge pointant VERS LE BAS
+  const arrowTip = H*0.56; // pointe en bas vers la zone notch
+  const arrowTop = H*0.28; // base de la flèche en haut
+  const arrowW = Math.max(8,(x2-x1)*0.22);
+
+  // Corps de la flèche
+  const rg=cx.createLinearGradient(xC,arrowTop,xC,arrowTip);
+  rg.addColorStop(0,'rgba(210,50,50,0.95)');rg.addColorStop(1,'rgba(210,50,50,0.7)');
+  cx.fillStyle=rg;
+
+  // Dessin flèche vers le bas : rectangle + triangle pointe en bas
+  const shaftW=arrowW*0.45;
+  const shaftH=(arrowTip-arrowTop)*0.60;
+  cx.beginPath();
+  // Tige verticale
+  cx.rect(xC-shaftW/2, arrowTop, shaftW, shaftH);
+  cx.fill();
+  // Tête triangulaire pointant vers le bas
+  cx.beginPath();
+  cx.moveTo(xC-arrowW, arrowTop+shaftH);
+  cx.lineTo(xC+arrowW, arrowTop+shaftH);
+  cx.lineTo(xC, arrowTip);
+  cx.closePath();
+  cx.fill();
+
+  // Texte "Votre acouphène" en rouge au-dessus de la flèche — bien centré
+  cx.fillStyle='rgba(180,40,40,0.95)';
+  cx.font='bold 12px Nunito Sans,sans-serif';
+  cx.textAlign='center';
+  cx.fillText('Votre acouphène',xC,H*0.13);
+  cx.font='bold 11px Nunito Sans,sans-serif';
+  cx.fillText(f+' Hz',xC,H*0.24);
+
+  // Label "Zone notchée" en bleu en bas
+  cx.fillStyle='rgba(26,95,168,0.75)';
+  cx.font='bold 10px Nunito Sans,sans-serif';
+  cx.fillText('Zone notchée',xC,H*0.97);
+
+  // Graduations Hz
+  cx.fillStyle='#8a9099';cx.font='9px Nunito Sans,sans-serif';
+  [250,500,1000,2000,4000,8000].forEach(freq=>{
+    const x=toX(freq);
+    if(x>14&&x<W-14){cx.textAlign='center';cx.fillText(freq>=1000?freq/1000+'k':freq,x,H*0.90);}
+  });
+}
+
+// ================================================================
+// OCTAVE CHECK — bug ½ corrigé
+// ================================================================
+let octChoice='same',octOsc=null;
+
+function showOctCheck(freq){
+  // Calculer les fréquences en s'assurant qu'elles sont dans la plage valide
+  const half=Math.max(125,Math.round(freq/2));
+  const dbl=Math.min(8000,Math.round(freq*2));
+  document.getElementById('octHzA').textContent=half;
+  document.getElementById('octHzB').textContent=freq;
+  document.getElementById('octHzC').textContent=dbl;
+  document.getElementById('octBox').style.display='block';
+  octChoice='same';
+  // Reset selection visuelle
+  ['octBtnA','octBtnB','octBtnC'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('sel');}
+  });
+  document.getElementById('octBtnB').classList.add('sel');
+}
+
+function playOctave(type){
+  if(octOsc){try{octOsc.stop();}catch(e){} octOsc=null;}
+  // Utiliser finalHz pour calculer les fréquences à jouer
+  let playFreq;
+  if(type==='half') playFreq=Math.max(125,finalHz/2);
+  else if(type==='double') playFreq=Math.min(8000,finalHz*2);
+  else playFreq=finalHz;
+
+  const c=getAC(),osc=c.createOscillator(),g=c.createGain();
+  osc.type='sine';
+  osc.frequency.value=playFreq;
+  g.gain.setValueAtTime(0,c.currentTime);
+  g.gain.linearRampToValueAtTime(0.35,c.currentTime+0.05);
+  g.gain.linearRampToValueAtTime(0.35,c.currentTime+2.8);
+  g.gain.linearRampToValueAtTime(0,c.currentTime+3);
+  osc.connect(g);g.connect(c.destination);
+  osc.start();
+  osc.stop(c.currentTime+3);
+  octOsc=osc;
+  osc.onended=()=>{octOsc=null;};
+}
+
+function selectOctave(type){
+  octChoice=type;
+  ['half','same','double'].forEach((t,i)=>{
+    const btn=document.getElementById('octBtn'+['A','B','C'][i]);
+    if(btn)btn.classList.toggle('sel',t===type);
+  });
+}
+
+function confirmOctave(){
+  if(octOsc){try{octOsc.stop();}catch(e){} octOsc=null;}
+  if(octChoice==='half') finalHz=Math.max(125,Math.round(finalHz/2));
+  else if(octChoice==='double') finalHz=Math.min(8000,Math.round(finalHz*2));
+  saveF(finalHz);
+  document.getElementById('octBox').style.display='none';
+  const nL=Math.round(finalHz/Math.sqrt(2)),nH=Math.round(finalHz*Math.sqrt(2));
+  document.getElementById('resNum').textContent=finalHz;
+  document.getElementById('nFreq').textContent=finalHz+' Hz';
+  document.getElementById('nRange').textContent=nL+' – '+nH+' Hz';
+  manFreq=finalHz;
+  setTimeout(()=>drawSpec(finalHz),100);
+}
+
+// ================================================================
+// PAYWALL
+// ================================================================
+let selOffer=2;
+function selectOffer(n){
+  selOffer=n;
+  document.getElementById('oc1').classList.toggle('sel',n===1);
+  document.getElementById('oc2').classList.toggle('sel',n===2);
+  document.getElementById('buyTxt').textContent=n===1?'→ Accéder à mon programme — 47 €':'→ Accéder à mon programme — 67 €/an';
+}
+function simulatePurchase(){
+  document.getElementById('pwDiv').style.display='none';
+  document.getElementById('progHz').textContent=(finalHz||'—')+' Hz';
+  ringSet(0);
+  const v=parseInt(document.getElementById('durS').value);
+  document.getElementById('rTime').textContent=String(v).padStart(2,'0')+':00';
+  showArrow('arr3');show('fs4');setBar(4);
+}
+
+// ================================================================
+// SOUND ENGINE
+// ================================================================
+let nSrc=null,nGain=null,isNP=false;
+let sInt=null,sTot=45*60,sRem=0,isSOn=false;
+let curSnd='pink',musicBuf=null;
+
+function selectSound(t){
+  curSnd=t;
+  ['pink','rain','music'].forEach(s=>{const el=document.getElementById('ss-'+s);if(el)el.classList.toggle('sel',s===t);});
+  document.getElementById('musicUpload').style.display=t==='music'?'block':'none';
+  if(isNP) crossfadeToNewSound();
+}
+
+function crossfadeToNewSound(){
+  if(!finalHz)return;
+  const c=getAC();
+  const vol=parseInt(document.getElementById('volS').value)/100*0.42;
+
+  // Nouveau gain pour le nouveau son
+  const newGain=c.createGain();
+  newGain.gain.setValueAtTime(0,c.currentTime);
+  newGain.gain.linearRampToValueAtTime(vol,c.currentTime+1.0);
+  newGain.connect(c.destination);
+
+  // Démarrer le nouveau son
+  let newSrc=null;
+  if(curSnd==='pink'){
+    const src=makePink();applyNotch(src,finalHz).connect(newGain);src.start();newSrc=src;
+  } else if(curSnd==='rain'){
+    const{src,out}=makeWaves();applyNotch(out,finalHz).connect(newGain);src.start();newSrc=src;
+  } else {
+    if(!musicBuf){const src=makePink();applyNotch(src,finalHz).connect(newGain);src.start();newSrc=src;}
+    else{const src=c.createBufferSource();src.buffer=musicBuf;src.loop=true;applyNotch(src,finalHz).connect(newGain);src.start();newSrc=src;}
+  }
+
+  // Descendre l'ancien son en fondu
+  if(nGain){
+    try{nGain.gain.linearRampToValueAtTime(0,c.currentTime+0.8);}catch(e){}
+    const oldSrc=nSrc;
+    setTimeout(()=>{try{if(oldSrc)oldSrc.stop();}catch(e){}},900);
+  }
+
+  // Le nouveau devient l'actif
+  nSrc=newSrc;
+  nGain=newGain;
+}
+function loadMusic(input){
+  const file=input.files[0];if(!file)return;
+  document.getElementById('upTxt').textContent='⏳ Chargement…';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    getAC().decodeAudioData(e.target.result).then(buf=>{
+      musicBuf=buf;document.getElementById('upTxt').textContent='✓ '+file.name;
+      if(isNP){stopNotch();setTimeout(startNotch,400);}
+    }).catch(()=>{document.getElementById('upTxt').textContent='❌ Format non supporté';});
+  };
+  reader.readAsArrayBuffer(file);
+}
+function makePink(){
+  const c=getAC(),sr=c.sampleRate,dur=10;
+  const buf=c.createBuffer(1,sr*dur,sr),d=buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for(let i=0;i<d.length;i++){const w=Math.random()*2-1;b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;b2=0.96900*b2+w*0.1538520;b3=0.86650*b3+w*0.3104856;b4=0.55000*b4+w*0.5329522;b5=-0.7616*b5-w*0.0168980;d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.10;b6=w*0.115926;}
+  const src=c.createBufferSource();src.buffer=buf;src.loop=true;return src;
+}
+function makeWaves(){
+  // Vagues de mer — bruit rose modulé rythmiquement comme des vagues
+  const c=getAC(),sr=c.sampleRate,dur=12;
+  const buf=c.createBuffer(1,sr*dur,sr),d=buf.getChannelData(0);
+  // Bruit rose de base
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for(let i=0;i<d.length;i++){
+    const w=Math.random()*2-1;
+    b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;
+    b2=0.96900*b2+w*0.1538520;b3=0.86650*b3+w*0.3104856;
+    b4=0.55000*b4+w*0.5329522;b5=-0.7616*b5-w*0.0168980;
+    d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.08;b6=w*0.115926;
+  }
+  const src=c.createBufferSource();src.buffer=buf;src.loop=true;
+
+  // Filtre passe-bas pour son océan doux
+  const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=800;lp.Q.value=0.5;
+
+  // LFO pour simuler le rythme des vagues (~0.1 Hz = une vague toutes les 10 secondes)
+  const lfo=c.createOscillator();lfo.type='sine';lfo.frequency.value=0.12;
+  const lfoGain=c.createGain();lfoGain.gain.value=0.4;
+  const waveGain=c.createGain();waveGain.gain.value=0.6;
+
+  lfo.connect(lfoGain);lfoGain.connect(waveGain.gain);
+  src.connect(lp);lp.connect(waveGain);
+  lfo.start();
+
+  return{src,out:waveGain};
+}
+function applyNotch(src,freq){
+  const c=getAC();
+  const n=c.createBiquadFilter();n.type='notch';n.frequency.value=freq;n.Q.value=0.9;
+  const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=180;
+  const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=7200;
+  src.connect(n);n.connect(hp);hp.connect(lp);return lp;
+}
+function startNotch(){
+  if(!finalHz)return;stopNotch();
+  const c=getAC();
+  nGain=c.createGain();nGain.gain.setValueAtTime(0,c.currentTime);
+  nGain.gain.linearRampToValueAtTime(parseInt(document.getElementById('volS').value)/100*0.42,c.currentTime+1.2);
+  nGain.connect(c.destination);
+  if(curSnd==='pink'){const src=makePink();const out=applyNotch(src,finalHz);out.connect(nGain);src.start();nSrc=src;}
+  else if(curSnd==='rain'){const{src,out}=makeWaves();applyNotch(out,finalHz).connect(nGain);src.start();nSrc=src;}
+  else{
+    const src=musicBuf?c.createBufferSource():makePink();
+    if(musicBuf){src.buffer=musicBuf;src.loop=true;}
+    const out=applyNotch(src,finalHz);out.connect(nGain);src.start();nSrc=src;
+  }
+  isNP=true;
+}
+function stopNotch(){
+  if(nSrc){try{nGain.gain.linearRampToValueAtTime(0,getAC().currentTime+0.5);}catch(e){}
+  setTimeout(()=>{try{if(nSrc)nSrc.stop();}catch(e){}; nSrc=null;},600);}
+  isNP=false;
+}
+function stopAll(){stopAllCmp();stopPreview();stopNotch();stopManTone();if(octOsc){try{octOsc.stop();}catch(e){} octOsc=null;}}
+function setVol(v){document.getElementById('volV').textContent=v+'%';if(nGain&&AC)nGain.gain.linearRampToValueAtTime(parseInt(v)/100*0.42,AC.currentTime+0.1);}
+
+// SESSION
+function setDur(v){
+  const newTot=v*60;
+  document.getElementById('durV').textContent=v+' min';
+  if(isSOn){
+    // Ajustement proportionnel — conserve la progression
+    const progress=1-(sRem/sTot);
+    sTot=newTot;
+    sRem=Math.round(newTot*(1-progress));
+    sRem=Math.max(0,sRem);
+    ringSet(progress);
+    const m=Math.floor(sRem/60),s=sRem%60;
+    document.getElementById('rTime').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  } else {
+    sTot=newTot;sRem=newTot;
+    document.getElementById('rTime').textContent=String(v).padStart(2,'0')+':00';
+    ringSet(0);
+  }
+}
+function toggleSess(){if(isSOn)stopSess();else startSess();}
+function startSess(){
+  startNotch();sRem=sTot;isSOn=true;
+  document.getElementById('launchBtn').classList.add('active');
+  document.getElementById('launchTxt').textContent='✕ Arrêter la séance';
+  dot('sdot','go');document.getElementById('stxt').textContent='Séance en cours…';
+  sInt=setInterval(()=>{
+    sRem--;
+    const m=Math.floor(sRem/60),s=sRem%60;
+    document.getElementById('rTime').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    ringSet(1-sRem/sTot);
+    if(sRem<=0)endSess(false);
+  },1000);
+}
+function stopSess(){clearInterval(sInt);endSess(true);}
+function endSess(manual){
+  isSOn=false;clearInterval(sInt);stopNotch();
+  document.getElementById('launchBtn').classList.remove('active');
+  document.getElementById('launchTxt').textContent='☽ Lancer la séance du soir';
+  dot('sdot',manual?'':'on');
+  document.getElementById('stxt').textContent=manual?'Séance arrêtée':'✓ Bonne nuit';
+  const v=parseInt(document.getElementById('durS').value);
+  ringSet(manual?0:1);
+  setTimeout(()=>{dot('sdot','');document.getElementById('stxt').textContent='Prêt';ringSet(0);document.getElementById('rTime').textContent=String(v).padStart(2,'0')+':00';},4000);
+}
+function ringSet(p){document.getElementById('rFg').style.strokeDashoffset=314*(1-p);}
+function dot(id,s){const d=document.getElementById(id);if(d)d.className='sd'+(s?' '+s:'');}
+</script>
+</body>
+</html>
